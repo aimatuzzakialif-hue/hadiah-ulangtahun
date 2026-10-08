@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Happy Birthday 💖</title>
+<style>
+  /* ============ 1. CSS: tampilan ============ */
+  :root {
+    --pink: #ff5c8a;
+    --pink-soft: #ffd6e3;
+    --cream: #fff7f0;
+    --ink: #4a2a35;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: linear-gradient(160deg, #ffe3ec, #fff1e6 55%, #ffd9e6);
+    overflow: hidden;
+  }
+  #app { position: relative; max-width: 480px; height: 100%; margin: 0 auto; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 50; }
+
+  /* halaman */
+  .page {
+    position: absolute; inset: 0 0 64px 0;
+    padding: 24px 20px 12px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    overflow-y: auto;
+    opacity: 0; pointer-events: none; transform: translateY(20px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .page.active { opacity: 1; pointer-events: auto; transform: none; }
+  .center { display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; width: 100%; }
+
+  h1 { font-size: 1.9rem; color: var(--pink); line-height: 1.2; }
+  h2 { font-size: 1.4rem; color: var(--pink); }
+  p { line-height: 1.6; }
+  .typed { min-height: 7em; font-size: 1.05rem; white-space: pre-line; }
+
+  .btn {
+    border: none; cursor: pointer; font-size: 1rem; font-weight: 600;
+    padding: 12px 26px; border-radius: 999px;
+    background: var(--pink); color: #fff;
+    box-shadow: 0 6px 16px rgba(255, 92, 138, .4);
+    transition: transform .15s;
+  }
+  .btn:active { transform: scale(.94); }
+  .btn.ghost { background: #fff; color: var(--pink); box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+
+  /* foto */
+  .photo {
+    width: min(62vw, 240px); background: #fff; padding: 8px 8px 0;
+    border-radius: 14px; box-shadow: 0 10px 24px rgba(120, 40, 70, .25);
+    transform: rotate(-2deg); overflow: hidden;
+  }
+  .photo .frame { width: 100%; aspect-ratio: 3 / 4; border-radius: 8px; overflow: hidden; background: var(--pink-soft); }
+  .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .photo .cap { font-size: .85rem; padding: 8px 4px 10px; color: #8a5568; }
+  .photo.round { border-radius: 50%; padding: 6px; aspect-ratio: 1; transform: none; width: min(48vw, 190px); }
+  .photo.round .frame { aspect-ratio: 1; border-radius: 50%; height: 100%; }
+  .photo.round .cap { display: none; }
+  .photo.small { width: min(40vw, 150px); }
+  .ph { height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 2rem; text-align: center; padding: 8px; }
+  .ph small { font-size: .65rem; color: #a35c75; }
+
+  /* galeri */
+  .thumbs { display: flex; gap: 10px; }
+  .thumbs button { border: 3px solid transparent; border-radius: 10px; background: none; cursor: pointer; padding: 0; opacity: .6; }
+  .thumbs button.on { border-color: var(--pink); opacity: 1; }
+  .thumbs .photo { width: 64px; padding: 0; border-radius: 8px; box-shadow: none; transform: none; }
+  .thumbs .cap { display: none; }
+
+  /* kuis */
+  .opts { display: grid; gap: 10px; width: 100%; }
+  .opt { padding: 12px; border-radius: 14px; border: 2px solid var(--pink-soft); background: #fff; font-size: 1rem; cursor: pointer; }
+  .opt.good { background: #c9f5d6; border-color: #5ac27e; }
+  .opt.bad { background: #ffd0d0; border-color: #ff7b7b; animation: shake .4s; }
+
+  /* alasan */
+  .hearts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .heart { font-size: 2.4rem; background: none; border: none; cursor: pointer; transition: transform .2s; }
+  .heart:active { transform: scale(1.3); }
+  .heart.on { filter: grayscale(.6); opacity: .5; }
+  .reason { min-height: 3.2em; font-weight: 600; }
+
+  /* timeline */
+  .timeline { width: 100%; display: grid; gap: 10px; text-align: left; }
+  .tl { background: #fff; border-radius: 14px; padding: 12px 14px; cursor: pointer; box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+  .tl b { color: var(--pink); }
+  .tl .more { max-height: 0; overflow: hidden; transition: max-height .4s; font-size: .92rem; }
+  .tl.open .more { max-height: 120px; padding-top: 6px; }
+
+  /* hadiah */
+  .gift { font-size: 6rem; cursor: pointer; background: none; border: none; }
+  .shake { animation: shake .6s; }
+  .voucher { background: #fff; border: 2px dashed var(--pink); padding: 14px; border-radius: 14px; }
+
+  /* kue */
+  .cake { position: relative; width: 190px; height: 150px; margin-top: 40px; }
+  .layer { position: absolute; left: 50%; transform: translateX(-50%); border-radius: 10px; }
+  .l1 { bottom: 0; width: 190px; height: 60px; background: #ff9dbb; }
+  .l2 { bottom: 60px; width: 140px; height: 50px; background: #ffc2d6; }
+  .candle { position: absolute; bottom: 110px; left: 50%; width: 10px; height: 36px; background: #fff; border: 1px solid #ddd; transform: translateX(-50%); border-radius: 3px; }
+  .flame {
+    position: absolute; top: -26px; left: 50%; width: 14px; height: 22px; transform: translateX(-50%);
+    background: radial-gradient(circle at 50% 70%, #fff6a0, #ffb300 70%); border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%;
+    cursor: pointer; animation: flicker .3s infinite alternate;
+  }
+  .flame.off { display: none; }
+
+  /* navigasi */
+  .nav {
+    position: absolute; bottom: 0; left: 0; right: 0; height: 64px;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 20px;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .nav button { width: 44px; height: 44px; border-radius: 50%; border: none; background: #fff; color: var(--pink); font-size: 1.2rem; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,.12); }
+  .nav button[hidden] { visibility: hidden; display: block; }
+  .dots { display: flex; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink-soft); transition: .3s; }
+  .dot.on { background: var(--pink); transform: scale(1.5); }
+
+  /* hati melayang di background */
+  .float { position: fixed; bottom: -40px; font-size: 1.4rem; animation: rise linear forwards; pointer-events: none; z-index: 1; }
+
+  @keyframes rise { to { transform: translateY(-110vh) rotate(40deg); opacity: 0; } }
+  @keyframes shake { 0%,100% { transform: translateX(0) } 25% { transform: translateX(-8px) } 75% { transform: translateX(8px) } }
+  @keyframes flicker { to { transform: translateX(-50%) scale(1.1, .94); } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* =====================================================================
+   0. KONFIGURASI - EDIT BAGIAN INI SAJA UNTUK PERSONALISASI
+   ===================================================================== */
+const CONFIG = {
+  name: "Sayang",          // nama / panggilan kekasihmu
+  from: "Aku",             // namamu
+  // Taruh foto di folder "foto" dengan nama 1.jpg ... 12.jpg
+  photos: [
+    { src: "foto/1.jpeg",  caption: "plenger mu" },
+    { src: "foto/2.jpeg",  caption: "Senyum yang aku suka" },
+    { src: "foto/3.jpeg",  caption: "Hari pertama kita" },
+    { src: "foto/4.jpeg",  caption: "Momen 1" },
+    { src: "foto/5.jpeg",  caption: "Momen 2" },
+    { src: "foto/6.jpeg",  caption: "Momen 3" },
+    { src: "foto/7.jpeg",  caption: "Kita berdua" },
+    { src: "foto/8.jpeg",  caption: "Kamu cantik banget" },
+    { src: "foto/9.jpeg",  caption: "Kamu, favoritku" },
+    { src: "foto/10.jpeg", caption: "Hadiah terbaik: kamu" },
+    { src: "foto/11.jpeg", caption: "Make a wish!" },
+    { src: "foto/12.jpeg", caption: "Selamanya?" },
+  ],
+  message:
+    "Hari ini hari spesialmu.\n\nTerima kasih sudah hadir, sabar, dan membuat hari-hariku lebih berwarna.\n\nAku siapkan sesuatu kecil untukmu. Yuk, jelajahi satu per satu 💖",
+  quiz: [
+    { q: "Di mana pertama kali kita bertemu?", options: ["Kafe", "Sekolah / kampus", "Online"], answer: 1 },
+    { q: "Makanan favoritku kalau sama kamu?", options: ["Bakso", "Nasi goreng", "Apa saja asal bareng kamu"], answer: 2 },
+    { q: "Siapa yang paling sayang?", options: ["Aku", "Kamu", "Dua-duanya"], answer: 2 },
+  ],
+  reasons: [
+    "Senyummu bikin hariku cerah ☀️",
+    "Kamu sabar menghadapiku 🥹",
+    "Tawa kamu itu favoritku 🎶",
+    "Kamu selalu ada buat aku 🤝",
+    "Kamu apa adanya, dan itu cukup ✨",
+    "Bersamamu semuanya terasa ringan 🌈",
+  ],
+  timeline: [
+    { date: "Awal", title: "Pertama bertemu", text: "Awalnya kita hanya dua orang yang tidak sengaja bertemu, tanpa tahu bahwa pertemuan sederhana itu akan menjadi awal dari cerita yang begitu berarti." },
+    { date: "Hari jadi", title: "Resmi bersama", text: "Hari itu menjadi awal dari kata ‘kita’. Sederhana, tapi sampai sekarang menjadi salah satu hari yang paling ingin aku ingat." },
+    { date: "Kenangan", title: "Hal paling lucu", text: "Banyak hal kecil yang kita lakukan bersama, tapi entah kenapa selalu berhasil membuat kita tertawa. Mungkin karena sesederhana apa pun momennya, kalau bersamamu semuanya terasa lebih menyenangkan." },
+  ],
+  voucher: "🎟️ VOUCHER: 1x makan malam pilihanmu + 1x peluk tanpa batas",
+  letter:
+    "Selamat ulang tahun, sayang.\n\nSemoga semua doamu dijawab, semua lelahmu terbayar, dan aku boleh terus ada di sampingmu.\n\nI love you, today and always.",
+};
+
+/* =====================================================================
+   1. UTILITAS
+   ===================================================================== */
+function h(tag, className = "", html = "") {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (html) el.innerHTML = html;
+  return el;
+}
+
+/* =====================================================================
+   2. CLASS Photo
+   Konsep: ENCAPSULATION (field private #) + method render()
+   ===================================================================== */
+class Photo {
+  #src;
+  #caption;
+
+  constructor({ src, caption = "" }) {
+    this.#src = src;
+    this.#caption = caption;
+  }
+
+  get src() { return this.#src; }
+
+  render(extraClass = "") {
+    const wrap = h("figure", "photo " + extraClass);
+    const frame = h("div", "frame");
+    const img = new Image();
+    img.alt = this.#caption;
+    img.src = this.#src;
+    // Jika foto belum ada, tampilkan placeholder
+    img.onerror = () => {
+      frame.innerHTML = `<div class="ph"><span>📷</span><small>Taruh foto di<br>${this.#src}</small></div>`;
+    };
+    frame.append(img);
+    wrap.append(frame, h("figcaption", "cap", this.#caption));
+    return wrap;
+  }
+}
+
+/* =====================================================================
+   3. CLASS Particle & Confetti
+   Konsep: COMPOSITION (Confetti "memiliki" banyak Particle)
+   ===================================================================== */
+class Particle {
+  constructor(x, y) {
+    this.x = x; this.y = y;
+    this.vx = (Math.random() - 0.5) * 10;
+    this.vy = Math.random() * -12 - 4;
+    this.size = Math.random() * 8 + 4;
+    this.color = ["#ff5c8a", "#ffb300", "#5ac2ff", "#9b6bff", "#5ac27e"][Math.floor(Math.random() * 5)];
+    this.life = 140;
+  }
+  update() { this.vy += 0.35; this.x += this.vx; this.y += this.vy; this.life--; }
+  draw(ctx) { ctx.fillStyle = this.color; ctx.fillRect(this.x, this.y, this.size, this.size * 0.6); }
+  get dead() { return this.life <= 0; }
+}
+
+class Confetti {
+  #canvas; #ctx; #particles = []; #running = false;
+
+  constructor(canvas) {
+    this.#canvas = canvas;
+    this.#ctx = canvas.getContext("2d");
+    this.#resize();
+    addEventListener("resize", () => this.#resize());
+  }
+
+  #resize() {
+    this.#canvas.width = innerWidth;
+    this.#canvas.height = innerHeight;
+  }
+
+  burst(count = 120) {
+    const x = this.#canvas.width / 2, y = this.#canvas.height * 0.6;
+    for (let i = 0; i < count; i++) this.#particles.push(new Particle(x, y));
+    if (!this.#running) { this.#running = true; this.#loop(); }
+  }
+
+  #loop = () => {
+    const ctx = this.#ctx;
+    ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+    this.#particles.forEach(p => { p.update(); p.draw(ctx); });
+    this.#particles = this.#particles.filter(p => !p.dead);
+    if (this.#particles.length) requestAnimationFrame(this.#loop);
+    else this.#running = false;
+  };
+}
+
+/* =====================================================================
+   4. CLASS Page (ABSTRACT / BASE CLASS)
+   Konsep: INHERITANCE + ABSTRACTION
+   Semua halaman mewarisi class ini. render() wajib di-override.
+   ===================================================================== */
+class Page {
+  #el;
+
+  constructor(app, data = {}) {
+    if (new.target === Page) throw new Error("Page adalah abstract class, tidak boleh dibuat langsung.");
+    this.app = app;
+    this.data = data;
+    this.#el = h("section", "page");
+  }
+
+  get el() { return this.#el; }
+
+  build() { this.#el.replaceChildren(this.render()); }
+
+  render() { throw new Error("Subclass wajib mengimplementasikan render()"); }
+  onEnter() {}   // dipanggil saat halaman tampil (hook)
+  onLeave() {}   // dipanggil saat halaman ditinggalkan (hook)
+
+  photo(index, cls = "") { return new Photo(CONFIG.photos[index]).render(cls); }
+}
+
+/* =====================================================================
+   5. SUBCLASS: 10 halaman. Semuanya override render() = POLYMORPHISM
+   ===================================================================== */
+
+/* Halaman 1 - Cover */
+class CoverPage extends Page {
+  render() {
+    const box = h("div", "center");
+    const btn = h("button", "btn", "Buka kejutan 💌");
+    btn.onclick = () => { this.app.confetti.burst(); this.app.next(); };
+    box.append(
+      this.photo(0, "round"),
+      h("h1", "", `Selamat Ulang Tahun,<br>${CONFIG.name}! 🎂`),
+      h("p", "", `Dari ${CONFIG.from}, dengan seluruh cinta`),
+      btn
+    );
+    return box;
+  }
+  onEnter() { this.app.startHearts(); }
+}
+
+/* Halaman 2 - Pesan mengetik */
+class TypewriterPage extends Page {
+  #timer = null;
+  render() {
+    const box = h("div", "center");
+    this.text = h("p", "typed");
+    box.append(this.photo(1, "small"), h("h2", "", "Untukmu 💗"), this.text);
+    return box;
+  }
+  onEnter() {
+    this.text.textContent = "";
+    const msg = CONFIG.message;
+    let i = 0;
+    this.#timer = setInterval(() => {
+      this.text.textContent += msg[i++];
+      if (i >= msg.length) clearInterval(this.#timer);
+    }, 45);
+  }
+  onLeave() { clearInterval(this.#timer); }
+}
+
+/* Halaman 3 - Foto yang bisa dibalik / diklik */
+class FlipPhotoPage extends Page {
+  render() {
+    const box = h("div", "center");
+    const p = this.photo(2);
+    const note = h("p", "", "Sentuh fotonya ya 👆");
+    const lines = ["Aku suka banget foto ini 🥰", "Kamu selalu cantik di mataku ✨", "Ini salah satu hari favoritku 💞"];
+    let n = 0;
+    p.style.cursor = "pointer";
+    p.onclick = () => {
+      note.textContent = lines[n++ % lines.length];
+      p.style.transform = `rotate(${n % 2 ? 3 : -3}deg) scale(1.05)`;
+    };
+    box.append(h("h2", "", "Kenangan kita"), p, note);
+    return box;
+  }
+}
+
+/* Halaman 4 - Galeri */
+class GalleryPage extends Page {
+  #current = 0;
+  render() {
+    const box = h("div", "center");
+    this.stage = h("div");
+    const thumbs = h("div", "thumbs");
+    [3, 4, 5].forEach((idx, i) => {
+      const b = h("button", i === 0 ? "on" : "");
+      b.append(this.photo(idx));
+      b.onclick = () => {
+        this.#current = i;
+        thumbs.querySelectorAll("button").forEach((x, j) => x.classList.toggle("on", j === i));
+        this.#show(idx);
+      };
+      thumbs.append(b);
+    });
+    box.append(h("h2", "", "Galeri kita 📸"), this.stage, thumbs);
+    this.#show(3);
+    return box;
+  }
+  #show(idx) { this.stage.replaceChildren(this.photo(idx)); }
+}
+
+/* Halaman 5 - Kuis */
+class QuizPage extends Page {
+  #i = 0;
+  #score = 0;
+  render() {
+    const box = h("div", "center");
+    this.area = h("div", "center");
+    box.append(this.photo(6, "small"), h("h2", "", "Kuis tentang kita 💭"), this.area);
+    this.#show();
+    return box;
+  }
+  #show() {
+    const q = CONFIG.quiz[this.#i];
+    if (!q) {
+      this.area.replaceChildren(h("p", "", `Skor kamu ${this.#score}/${CONFIG.quiz.length}. Apa pun skornya, kamu tetap juara di hatiku 🏆💖`));
+      this.app.confetti.burst(80);
+      return;
+    }
+    const wrap = h("div", "center");
+    wrap.append(h("p", "", `<b>${this.#i + 1}. ${q.q}</b>`));
+    const opts = h("div", "opts");
+    q.options.forEach((text, idx) => {
+      const b = h("button", "opt", text);
+      b.onclick = () => {
+        if (idx === q.answer) {
+          b.classList.add("good"); this.#score++;
+          setTimeout(() => { this.#i++; this.#show(); }, 700);
+        } else {
+          b.classList.add("bad");
+        }
+      };
+      opts.append(b);
+    });
+    wrap.append(opts);
+    this.area.replaceChildren(wrap);
+  }
+}
+
+/* Halaman 6 - Alasan aku sayang kamu */
+class ReasonsPage extends Page {
+  #opened = new Set();
+  render() {
+    const box = h("div", "center");
+    this.msg = h("p", "reason", "Pilih satu hati 💗");
+    const grid = h("div", "hearts");
+    CONFIG.reasons.forEach((r, i) => {
+      const b = h("button", "heart", "💖");
+      b.onclick = () => {
+        this.#opened.add(i);
+        b.classList.add("on");
+        this.msg.textContent = r;
+        if (this.#opened.size === CONFIG.reasons.length) {
+          this.msg.textContent += "  (dan masih banyak lagi!)";
+          this.app.confetti.burst(80);
+        }
+      };
+      grid.append(b);
+    });
+    box.append(this.photo(7, "small"), h("h2", "", "Kenapa aku sayang kamu"), grid, this.msg);
+    return box;
+  }
+}
+
+/* Halaman 7 - Timeline */
+class TimelinePage extends Page {
+  render() {
+    const box = h("div", "center");
+    const list = h("div", "timeline");
+    CONFIG.timeline.forEach(item => {
+      const card = h("div", "tl", `<b>${item.date}</b> · ${item.title}<div class="more">${item.text}</div>`);
+      card.onclick = () => card.classList.toggle("open");
+      list.append(card);
+    });
+    box.append(this.photo(8, "small"), h("h2", "", "Perjalanan kita 🛤️"), list);
+    return box;
+  }
+}
+
+/* Halaman 8 - Kotak hadiah */
+class GiftPage extends Page {
+  #opened = false;
+  render() {
+    const box = h("div", "center");
+    this.area = h("div", "center");
+    const gift = h("button", "gift", "🎁");
+    gift.onclick = () => this.#open(gift);
+    this.area.append(gift, h("p", "", "Sentuh kadonya!"));
+    box.append(h("h2", "", "Ada hadiah untukmu"), this.area);
+    return box;
+  }
+  #open(gift) {
+    if (this.#opened) return;
+    this.#opened = true;
+    gift.classList.add("shake");
+    setTimeout(() => {
+      this.area.replaceChildren(this.photo(9), h("p", "voucher", CONFIG.voucher));
+      this.app.confetti.burst(150);
+    }, 600);
+  }
+}
+
+/* Halaman 9 - Kue & tiup lilin */
+class CakePage extends Page {
+  render() {
+    const box = h("div", "center");
+    const cake = h("div", "cake", `
+      <div class="layer l1"></div><div class="layer l2"></div>
+      <div class="candle"><div class="flame"></div></div>`);
+    this.flame = cake.querySelector(".flame");
+    this.info = h("p", "", "Sentuh api lilinnya untuk meniup 🕯️");
+    this.flame.onclick = () => this.#blow();
+    box.append(h("h2", "", "Make a wish! 🎂"), this.photo(10, "small"), cake, this.info);
+    return box;
+  }
+  #blow() {
+    this.flame.classList.add("off");
+    this.info.textContent = "Semoga keinginanmu terkabul 💫 Happy Birthday!";
+    this.app.confetti.burst(200);
+  }
+  onEnter() {
+    this.flame?.classList.remove("off");
+    if (this.info) this.info.textContent = "Sentuh api lilinnya untuk meniup 🕯️";
+  }
+}
+
+/* Halaman 10 - Surat penutup */
+class FinalPage extends Page {
+  render() {
+    const box = h("div", "center");
+    const again = h("button", "btn ghost", "Ulangi dari awal 🔁");
+    again.onclick = () => this.app.go(0);
+    box.append(this.photo(11), h("h2", "", "Dari hatiku 💌"), h("p", "typed", CONFIG.letter), again);
+    return box;
+  }
+  onEnter() { this.app.confetti.burst(220); }
+}
+
+/* =====================================================================
+   6. CLASS App (CONTROLLER)
+   Mengatur daftar halaman, navigasi, swipe, dan keyboard.
+   ===================================================================== */
+class App {
+  #pages = [];
+  #index = 0;
+
+  constructor(root) {
+    this.root = root;
+    this.confetti = new Confetti(document.getElementById("confetti"));
+    this.#pages = [
+      new CoverPage(this), new TypewriterPage(this), new FlipPhotoPage(this),
+      new GalleryPage(this), new QuizPage(this), new ReasonsPage(this),
+      new TimelinePage(this), new GiftPage(this), new CakePage(this), new FinalPage(this),
+    ];
+    this.#build();
+    this.#bindEvents();
+    this.go(0);
+  }
+
+  #build() {
+    this.#pages.forEach(p => { p.build(); this.root.append(p.el); });
+    this.prevBtn = h("button", "", "←");
+    this.nextBtn = h("button", "", "→");
+    this.dots = h("div", "dots");
+    this.#pages.forEach(() => this.dots.append(h("span", "dot")));
+    this.prevBtn.onclick = () => this.prev();
+    this.nextBtn.onclick = () => this.next();
+    const nav = h("nav", "nav");
+    nav.append(this.prevBtn, this.dots, this.nextBtn);
+    this.root.append(nav);
+  }
+
+  #bindEvents() {
+    addEventListener("keydown", e => {
+      if (e.key === "ArrowRight") this.next();
+      if (e.key === "ArrowLeft") this.prev();
+    });
+    let startX = 0;
+    this.root.addEventListener("touchstart", e => { startX = e.touches[0].clientX; }, { passive: true });
+    this.root.addEventListener("touchend", e => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (dx < -70) this.next();
+      if (dx > 70) this.prev();
+    });
+  }
+
+  go(i) {
+    if (i < 0 || i >= this.#pages.length) return;
+    this.#pages[this.#index].el.classList.remove("active");
+    this.#pages[this.#index].onLeave();
+    this.#index = i;
+    const page = this.#pages[i];
+    page.el.classList.add("active");
+    page.onEnter();
+    this.prevBtn.hidden = i === 0;
+    this.nextBtn.hidden = i === this.#pages.length - 1;
+    [...this.dots.children].forEach((d, j) => d.classList.toggle("on", j === i));
+  }
+
+  next() { this.go(this.#index + 1); }
+  prev() { this.go(this.#index - 1); }
+
+  startHearts() {
+    if (this.heartTimer) return;
+    this.heartTimer = setInterval(() => {
+      const s = h("span", "float", ["💖", "💕", "💗", "🌸"][Math.floor(Math.random() * 4)]);
+      s.style.left = Math.random() * 100 + "vw";
+      s.style.animationDuration = 5 + Math.random() * 5 + "s";
+      document.body.append(s);
+      setTimeout(() => s.remove(), 10000);
+    }, 700);
+  }
+}
+
+/* =====================================================================
+   7. JALANKAN APLIKASI
+   ===================================================================== */
+new App(document.getElementById("app"));
+</script>
+</body>
+</html>
